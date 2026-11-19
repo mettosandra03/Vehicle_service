@@ -60,5 +60,39 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+// HISTORY of one of my vehicles: every visit with its work and parts
+router.get('/:id/visits', async (req, res) => {
+  try {
+    const customerId = await getCustomerId(req.user.id);
+    if (!customerId) return res.status(403).json({ error: 'Only drivers have vehicles' });
+
+    // Make sure this vehicle belongs to the logged-in driver
+    const [own] = await db.query(
+      'SELECT id FROM vehicles WHERE id = ? AND customer_id = ?', [req.params.id, customerId]
+    );
+    if (!own.length) return res.status(404).json({ error: 'Vehicle not found' });
+
+    const [visits] = await db.query(
+      `SELECT vi.id, vi.visit_date, vi.odometer_km, vi.summary,
+              vi.next_service_km, vi.next_service_date, s.name AS shop_name
+       FROM visits vi JOIN shops s ON s.id = vi.shop_id
+       WHERE vi.vehicle_id = ?
+       ORDER BY vi.visit_date DESC, vi.id DESC`,
+      [req.params.id]
+    );
+    if (!visits.length) return res.json([]);
+
+    const [items] = await db.query(
+      `SELECT vi.visit_id, vi.item_type, p.problem, vi.description, vi.quantity, vi.cost
+       FROM visit_items vi LEFT JOIN problem_catalog p ON p.id = vi.problem_id
+       WHERE vi.visit_id IN (?)`,
+      [visits.map(v => v.id)]
+    );
+    res.json(visits.map(v => ({ ...v, items: items.filter(i => i.visit_id === v.id) })));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 module.exports = router;

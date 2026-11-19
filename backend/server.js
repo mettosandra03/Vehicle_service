@@ -10,6 +10,7 @@ app.get('/', (req, res) => res.json({ message: 'Vehicle Service API is running' 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/vehicles', require('./routes/vehicles'));
 app.use('/api/lights', require('./routes/lights'));
+app.use('/api/shop', require('./routes/shop'));
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Server running on http://localhost:${port}`));
