@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Garage Dashboard</title>
+<style>
+:root{--bg:#eef1ee;--ink:#17262b;--mut:#5b6b70;--pri:#0d5c63;--hi:#f0b429;--card:#fff;--line:#d3dad6;--bad:#b3261e;--ok:#1f7a3f}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.5 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+[hidden]{display:none!important}
+header{background:var(--pri);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:5px solid var(--hi);gap:12px}
+header h1{font-size:1.15rem;margin:0}
+main,.box{max-width:900px;margin:0 auto;padding:18px}
+.box{max-width:400px;margin-top:40px}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+nav button{background:var(--card);border:1px solid var(--line);color:var(--ink)}
+nav button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+section,.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px}
+h2{font-size:1.1rem;margin:0 0 10px}
+h3{font-size:1rem;margin:14px 0 6px}
+label{display:block;font-size:.88rem;color:var(--mut);margin:8px 0 2px}
+input,select,textarea,button{font:inherit;padding:9px 10px;border-radius:6px;border:1px solid var(--line);width:100%;background:#fff;color:var(--ink)}
+textarea{min-height:60px}
+button{width:auto;cursor:pointer;background:var(--pri);color:#fff;border-color:var(--pri);font-weight:600}
+button.alt{background:var(--card);color:var(--pri)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--hi)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:0 12px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.row:last-child{border-bottom:0}
+.row small,.mut{color:var(--mut)}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:.78rem;padding:2px 8px;border-radius:99px;background:var(--hi);color:#2b2000;font-weight:600}
+.tag.no{background:var(--line);color:var(--mut)}
+.msg{margin:8px 0 0;color:var(--ok);font-weight:600}.msg.bad{color:var(--bad)}
+.item{border:1px dashed var(--line);border-radius:8px;padding:10px;margin:8px 0}
+.item select{font-size:1.05rem}
+.srch{display:flex;gap:8px}
+</style></head><body>
+
+<div id="login" class="box card" hidden>
+  <h2>Garage dashboard</h2>
+  <div id="namewrap" hidden><label>Full name</label><input id="lname"></div>
+  <label>Phone</label><input id="lphone" inputmode="tel">
+  <label>Password</label><input id="lpass" type="password">
+  <p><button id="lgo">Log in</button> <button class="alt" id="ltoggle">Create mechanic account</button></p>
+  <p id="lmsg" class="msg bad"></p>
+</div>
+
+<div id="app" hidden>
+<header><h1 id="shopname"></h1><button class="alt" id="out">Log out</button></header>
+<main>
+  <section id="setup" hidden>
+    <h2>Set up your shop</h2>
+    <div class="grid">
+      <div><label>Shop name</label><input id="sn"></div>
+      <div><label>Phone</label><input id="sp"></div>
+      <div><label>Address</label><input id="sa"></div>
+      <div><label>Latitude</label><input id="slat"></div>
+      <div><label>Longitude</label><input id="slng"></div>
+    </div>
+    <p><button class="alt" id="gps">Use my current location</button> <button id="ssave">Save shop</button></p>
+    <p id="smsg" class="msg"></p>
+  </section>
+
+  <div id="main" hidden>
+    <nav>
+      <button data-t="cust" class="on">Customers</button>
+      <button data-t="visit">Record visit</button>
+      <button data-t="help">Help requests</button>
+    </nav>
+
+    <div id="t-cust">
+      <section>
+        <h2>Find a customer</h2>
+        <div class="srch"><input id="q" placeholder="Name, phone or number plate"><button id="qgo">Search</button></div>
+        <div id="qres"></div>
+      </section>
+      <section>
+        <h2>Add a walk-in customer</h2>
+        <div class="grid">
+          <div><label>Full name</label><input id="wn"></div>
+          <div><label>Phone</label><input id="wp" inputmode="tel"></div>
+          <div><label>Number plate</label><input id="wpl"></div>
+          <div><label>Make</label><select id="wmk"><option>Toyota</option><option>Nissan</option><option>Mercedes-Benz</option><option>Subaru</option><option>Mazda</option><option>Honda</option><option>Mitsubishi</option><option>Suzuki</option><option>Other</option></select></div>
+          <div><label>Model</label><input id="wmd"></div>
+          <div><label>Year</label><input id="wy" inputmode="numeric"></div>
+        </div>
+        <p><button id="wgo">Save and record visit</button></p>
+        <p id="wmsg" class="msg"></p>
+      </section>
+      <section><h2>My customers</h2><div id="mine"></div></section>
+      <section id="hist" hidden><h2 id="histh">Visit history</h2><div id="histb"></div></section>
+    </div>
+
+    <div id="t-visit" hidden>
+      <section>
+        <h2>Record a visit</h2>
+        <p id="vinfo" class="mut">Pick a car first: search for it under Customers, then press "Record visit".</p>
+        <div id="vform" hidden>
+          <div class="grid">
+            <div><label>Odometer (km)</label><input id="vodo" inputmode="numeric"></div>
+            <div><label>Visit date</label><input id="vdate" type="date"></div>
+            <div><label>Next service at (km)</label><input id="vnk" inputmode="numeric"></div>
+            <div><label>Next service date</label><input id="vnd" type="date"></div>
+          </div>
+          <label>Summary</label><input id="vsum" placeholder="e.g. Full service">
+          <h3>Problems and work done</h3>
+          <div id="items"></div>
+          <p><button class="alt" id="addi">Add another problem</button> <button id="vgo">Save visit</button></p>
+        </div>
+        <p id="vmsg" class="msg"></p>
+      </section>
+    </div>
+
+    <div id="t-help" hidden>
+      <section><h2>Help requests</h2><p><button class="alt" id="hrefresh">Refresh</button></p><div id="hlist"></div></section>
+    </div>
+  </div>
+</main></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let token=localStorage.getItem('tk'),shop=null,veh=null,problems=[],reg=false;
+
+async function api(path,method='GET',body){
+  const r=await fetch('/api'+path,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:body?JSON.stringify(body):undefined});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(d.error||'Request failed');
+  return d;
+}
+function msg(sel,t,bad){const e=$(sel);e.textContent=t;e.className='msg'+(bad?' bad':'')}
+function logout(){localStorage.removeItem('tk');token=null;start()}
+
+async function start(){
+  if(!token){$('#login').hidden=false;$('#app').hidden=true;return}
+  try{shop=await api('/shop/me')}catch(e){
+    if(/token|Login|Mechanics/.test(e.message)){logout();return}
+    shop=null}
+  $('#login').hidden=true;$('#app').hidden=false;
+  $('#shopname').textContent=shop?shop.name:'Set up your shop';
+  $('#setup').hidden=!!shop;$('#main').hidden=!shop;
+  if(shop){loadMine();loadHelp()}
+}
+
+$('#ltoggle').onclick=()=>{reg=!reg;$('#namewrap').hidden=!reg;$('#lgo').textContent=reg?'Create account':'Log in';$('#ltoggle').textContent=reg?'I already have an account':'Create mechanic account'};
+$('#lgo').onclick=async()=>{
+  try{
+    const phone=$('#lphone').value.trim(),password=$('#lpass').value;
+    if(reg)await api('/auth/register','POST',{full_name:$('#lname').value.trim(),phone,password,role:'mechanic'});
+    const d=await api('/auth/login','POST',{phone,password});
+    if(d.user.role!=='mechanic')throw new Error('This dashboard is for mechanics. Drivers use the app.');
+    token=d.token;localStorage.setItem('tk',token);msg('#lmsg','');start();
+  }catch(e){msg('#lmsg',e.message,1)}
+};
+$('#out').onclick=logout;
+
+$('#gps').onclick=()=>navigator.geolocation.getCurrentPosition(p=>{$('#slat').value=p.coords.latitude.toFixed(6);$('#slng').value=p.coords.longitude.toFixed(6)},()=>msg('#smsg','Location blocked. Type the latitude and longitude instead.',1));
+$('#ssave').onclick=async()=>{
+  try{
+    await api('/shop','POST',{name:$('#sn').value.trim(),phone:$('#sp').value.trim(),address:$('#sa').value.trim(),latitude:parseFloat($('#slat').value),longitude:parseFloat($('#slng').value)});
+    start();
+  }catch(e){msg('#smsg',e.message,1)}
+};
+
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.t));
+function show(t){
+  ['cust','visit','help'].forEach(x=>$('#t-'+x).hidden=x!==t);
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  if(t==='help')loadHelp();
+}
+
+function custRow(c){
+  return `<div class="row"><div><strong>${esc(c.full_name)}</strong> <small>${esc(c.phone)}</small>
+    ${c.plate?`<br><small>${esc(c.plate)} ${esc(c.make||'')} ${esc(c.model||'')}</small>`:''}
+    ${c.has_app!==undefined?` <span class="tag ${c.has_app?'':'no'}">${c.has_app?'Has app':'Walk-in'}</span>`:''}
+    ${c.visit_count?`<br><small>${c.visit_count} visit(s), last on ${esc(String(c.last_visit).slice(0,10))}</small>`:''}</div>
+    <div class="acts"><button class="alt" onclick="history_(${c.customer_id},'${esc(c.full_name).replace(/'/g,'')}')">History</button>
+    ${c.vehicle_id?`<button onclick="pick(${c.vehicle_id},'${esc(c.plate)}','${esc(c.make||'')}')">Record visit</button>`:''}</div></div>`;
+}
+async function loadMine(){
+  try{const r=await api('/shop/customers');$('#mine').innerHTML=r.length?r.map(custRow).join(''):'<p class="mut">No visits recorded yet. Search for a customer or add a walk-in above.</p>'}
+  catch(e){$('#mine').textContent=e.message}
+}
+$('#qgo').onclick=async()=>{
+  try{const r=await api('/shop/customers/search?q='+encodeURIComponent($('#q').value));
+    $('#qres').innerHTML=r.length?r.map(custRow).join(''):'<p class="mut">No match. Add them as a walk-in below.</p>'}
+  catch(e){$('#qres').innerHTML=`<p class="msg bad">${esc(e.message)}</p>`}
+};
+async function history_(id,name){
+  $('#hist').hidden=false;$('#histh').textContent='Visit history: '+name;
+  try{const v=await api(`/shop/customers/${id}/visits`);
+    $('#histb').innerHTML=v.length?v.map(x=>`<div class="item"><strong>${esc(String(x.visit_date).slice(0,10))}</strong> ${esc(x.plate)} at ${esc(x.odometer_km)} km<br>${esc(x.summary||'')}
+      <ul>${x.items.map(i=>`<li>${i.item_type==='part_replaced'?'Part changed':'Work'}: ${esc(i.problem||'')} ${esc(i.description||'')} ${i.cost?'(KES '+esc(i.cost)+')':''}</li>`).join('')}</ul>
+      ${x.next_service_date?`<small>Next service: ${esc(String(x.next_service_date).slice(0,10))}${x.next_service_km?' or '+esc(x.next_service_km)+' km':''}</small>`:''}</div>`).join(''):'<p class="mut">No visits recorded at your shop yet.</p>';
+  }catch(e){$('#histb').innerHTML=`<p class="msg bad">${esc(e.message)}</p>`}
+  $('#hist').scrollIntoView({behavior:'smooth'});
+}
+
+$('#wgo').onclick=async()=>{
+  try{
+    const c=await api('/shop/customers','POST',{full_name:$('#wn').value.trim(),phone:$('#wp').value.trim()});
+    const v=await api(`/shop/customers/${c.customer_id}/vehicles`,'POST',{plate:$('#wpl').value,make:$('#wmk').value,model:$('#wmd').value.trim(),year:parseInt($('#wy').value)||null});
+    msg('#wmsg','Saved.');pick(v.vehicle_id,$('#wpl').value.replace(/\s+/g,'').toUpperCase(),$('#wmk').value);
+  }catch(e){msg('#wmsg',e.message,1)}
+};
+
+async function pick(id,plate,make){
+  veh={id,plate,make};
+  try{problems=await api('/shop/problems?vehicle_id='+id)}catch(e){problems=[]}
+  $('#vinfo').textContent=`${plate} ${make}`;
+  $('#vform').hidden=false;$('#items').innerHTML='';$('#vdate').value=new Date().toISOString().slice(0,10);
+  addItem();show('visit');
+}
+function addItem(){
+  const d=document.createElement('div');d.className='item';
+  d.innerHTML=`<label>Problem (tap to choose)</label>
+    <select class="ip"><option value="">Choose a problem</option>${problems.map(p=>`<option value="${p.id}">${esc(p.icon||'')} ${esc(p.problem)}</option>`).join('')}</select>
+    <label>More details</label><textarea class="id" placeholder="What did you find and what did you do?"></textarea>
+    <div class="grid"><div><label>Type</label><select class="it"><option value="work">Work done</option><option value="part_replaced">Part replaced</option></select></div>
+    <div><label>Cost (KES)</label><input class="ic" inputmode="numeric"></div></div>`;
+  $('#items').appendChild(d);
+}
+$('#addi').onclick=addItem;
+$('#vgo').onclick=async()=>{
+  const items=[...document.querySelectorAll('#items .item')].map(d=>({item_type:d.querySelector('.it').value,problem_id:parseInt(d.querySelector('.ip').value)||null,description:d.querySelector('.id').value.trim(),cost:parseFloat(d.querySelector('.ic').value)||null})).filter(i=>i.problem_id||i.description);
+  try{
+    await api('/shop/visits','POST',{vehicle_id:veh.id,visit_date:$('#vdate').value,odometer_km:parseInt($('#vodo').value),summary:$('#vsum').value.trim(),next_service_km:parseInt($('#vnk').value)||null,next_service_date:$('#vnd').value||null,items});
+    msg('#vmsg','Visit saved.');$('#vform').hidden=true;$('#vinfo').textContent='Visit saved. Pick another car to record a new visit.';loadMine();
+    ['vodo','vnk','vnd','vsum'].forEach(i=>$('#'+i).value='');
+  }catch(e){msg('#vmsg',e.message,1)}
+};
+
+async function loadHelp(){
+  try{const r=await api('/help/shop');
+    $('#hlist').innerHTML=r.length?r.map(h=>`<div class="row"><div><strong>${esc(h.full_name)}</strong> <small>${esc(h.phone)}</small><br>${esc(h.plate||'')} ${esc(h.make||'')} ${esc(h.model||'')}<br>${esc(h.issue||'No details given')}<br>
+      <small>${esc(String(h.created_at).replace('T',' ').slice(0,16))} | <a href="https://www.google.com/maps?q=${h.latitude},${h.longitude}" target="_blank" rel="noopener">View location</a></small></div>
+      <div class="acts"><span class="tag ${h.status==='pending'?'':'no'}">${esc(h.status)}</span>
+      ${h.status==='pending'?`<button onclick="setH(${h.id},'accepted')">Accept</button>`:''}
+      ${h.status==='accepted'?`<button onclick="setH(${h.id},'completed')">Mark done</button>`:''}
+      ${h.status==='pending'||h.status==='accepted'?`<button class="alt" onclick="setH(${h.id},'cancelled')">Cancel</button>`:''}</div></div>`).join(''):'<p class="mut">No help requests yet.</p>';
+  }catch(e){$('#hlist').textContent=e.message}
+}
+async function setH(id,status){try{await api('/help/'+id,'PATCH',{status});loadHelp()}catch(e){alert(e.message)}}
+$('#hrefresh').onclick=loadHelp;
+
+start();
+</script></body></html>
