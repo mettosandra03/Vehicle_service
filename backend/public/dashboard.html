@@ -5,7 +5,7 @@
 <style>
 :root{--bg:#eef1ee;--ink:#17262b;--mut:#5b6b70;--pri:#0d5c63;--hi:#f0b429;--card:#fff;--line:#d3dad6;--bad:#b3261e;--ok:#1f7a3f}
 *{box-sizing:border-box}
-body{margin:0;font:16px/1.5 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+body{margin:0;font:16px/1.5 "Segoe UI",system-ui,sans-serif;color:var(--ink);background:linear-gradient(rgba(16,25,28,.6),rgba(16,25,28,.6)),url('car-bg.jpg') center/cover fixed var(--bg)}
 [hidden]{display:none!important}
 header{background:var(--pri);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:5px solid var(--hi);gap:12px}
 header h1{font-size:1.15rem;margin:0}
@@ -243,5 +243,12 @@ async function loadHelp(){
 async function setH(id,status){try{await api('/help/'+id,'PATCH',{status});loadHelp()}catch(e){alert(e.message)}}
 $('#hrefresh').onclick=loadHelp;
 
+$('#vodo').addEventListener('input',()=>{
+  const km=parseInt($('#vodo').value);
+  if(!km)return;
+  $('#vnk').value=km+5000;
+  const d=new Date($('#vdate').value||Date.now());d.setMonth(d.getMonth()+6);
+  $('#vnd').value=d.toISOString().slice(0,10);
+});
 start();
 </script></body></html>
