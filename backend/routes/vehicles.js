@@ -94,5 +94,39 @@ router.get('/:id/visits', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+// REMINDERS: each of my cars with a status based on its next service date
+router.get('/reminders', async (req, res) => {
+  try {
+    const customerId = await getCustomerId(req.user.id);
+    if (!customerId) return res.status(403).json({ error: 'Only drivers have vehicles' });
 
+    const [rows] = await db.query(
+      `SELECT v.id AS vehicle_id, v.plate, v.make, v.model,
+              lv.visit_date AS last_service_date, lv.odometer_km AS last_odometer_km,
+              lv.next_service_km, lv.next_service_date,
+              DATEDIFF(lv.next_service_date, CURDATE()) AS days_left
+       FROM vehicles v
+       LEFT JOIN visits lv ON lv.id = (
+         SELECT id FROM visits WHERE vehicle_id = v.id
+         ORDER BY visit_date DESC, id DESC LIMIT 1
+       )
+       WHERE v.customer_id = ?`,
+      [customerId]
+    );
+
+    res.json(rows.map(r => {
+      let status = 'no_record';                       // never serviced at a shop
+      if (r.last_service_date) {
+        if (r.days_left == null) status = 'no_schedule';
+        else if (r.days_left < 0) status = 'overdue';
+        else if (r.days_left <= 14) status = 'due_soon';
+        else status = 'ok';
+      }
+      return { ...r, status };
+    }));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 module.exports = router;

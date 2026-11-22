@@ -11,6 +11,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/vehicles', require('./routes/vehicles'));
 app.use('/api/lights', require('./routes/lights'));
 app.use('/api/shop', require('./routes/shop'));
+app.use('/api/help', require('./routes/help'));
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Server running on http://localhost:${port}`));
